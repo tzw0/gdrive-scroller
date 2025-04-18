@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Installation
+# npx create-next-app@latest
+Need to install the following packages:
+create-next-app@15.3.1
+Ok to proceed? (y) y
+
+✔ What is your project named? … gdrive-scroller
+✔ Would you like to use TypeScript? … No / YES
+✔ Would you like to use ESLint? … No / YES
+✔ Would you like to use Tailwind CSS? … No / YES
+✔ Would you like your code inside a `src/` directory? … No / YES
+✔ Would you like to use App Router? (recommended) … No / YES
+✔ Would you like to use Turbopack for `next dev`? … NO / Yes
+✔ Would you like to customize the import alias (`@/*` by default)? … NO / Yes
+Creating a new Next.js app in /.../react/gdrive-scroller.
+
 ## Getting Started
 
 First, run the development server:
