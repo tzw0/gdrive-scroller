@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'export', // Enable static exports
+  basePath: 'gdrive-scroller',
+  images: {
+    unoptimized: true, // Disable image optimization for static export
+  },
+  // Optional: Add basePath if deploying to a subdirectory
+  // basePath: '/my-github-pages-app',
 };
 
 module.exports = {
