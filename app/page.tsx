@@ -1,12 +1,10 @@
 'use client';
 
-import Image from "next/image";
 import { useState, useEffect, useRef } from 'react';
 import { setCookie, getCookie } from 'cookies-next';
 import QRGenerator from "./qr";
 
-const gdrivelinkprefix = "https://drive.usercontent.google.com/download?id="
-const gdriveFolderlinkprefix = "https://drive.usercontent.google.com/download?id="
+const gdrivelinkprefix = "https://lh3.googleusercontent.com/d/"
 const bgheaderid = "1z7-ICzTecSQ4Z4wbZsl8Rb38FCFSWrNy"
 const bgfooterid = "1qOO9edsViKehiWKpkHNYEYD7yHnzPDQ4"
 const snsButtonSet = "1QfW0zFtwz5poV3X_nBq9zYdKwZHpKoWm"
@@ -18,24 +16,26 @@ const refreshing = "1SbonKV7sJmRVuHGSGveYDc1ShT5sNMuf"
 
 function GetHeader() {
   return (
-    <Image
+    <img
       src={gdrivelinkprefix + bgheaderid}
       alt="test google drive image"
       width={1300} // High resolution for quality
       height={0} // Auto-calculate
       className="w-full h-auto"
+      referrerPolicy="no-referrer"  // Bypass referrer checks
     />
   )
 }
 
 function GetFooter() {
   return (
-    <Image
+    <img
       src={gdrivelinkprefix + bgfooterid}
       alt="test google drive image"
       width={1300} // High resolution for quality
       height={0} // Auto-calculate
       className="w-full h-auto"
+      referrerPolicy="no-referrer"  // Bypass referrer checks
     />
   )
 }
@@ -70,8 +70,8 @@ function GetPics(props: GetPicsProps) {
     'X-Goog-Api-Key': props.apiKey,
   };
   useEffect(() => {
+    props.picsLoadedSetter(false);
     const fetchData = async () => {
-      props.picsLoadedSetter(false);
       try {
         const pfp_response = await fetch(GetGdriveFolderLink(pfpFolder), {
           method: 'GET',
@@ -115,6 +115,7 @@ function GetPics(props: GetPicsProps) {
         console.log("refreshing data:", data);
       } catch (error) {
         if (error instanceof Error) {
+          error.message = "failed to refresh: " + error.message
           setError(error);
         } else {
           setError(new Error('An unknown error occurred'));
@@ -124,24 +125,21 @@ function GetPics(props: GetPicsProps) {
     fetchData();
   }, []);
 
-  if ((!data && !error) || data === null) return <div className="w-full flex justify-center"><div className="text-2xl color-black items-center justify-items-center text-align-center  min-h-screen mt-5 p-5 overflow-hidden font-vt323 w-[80%]">
+  if ((!data && !error) || data === null) return <div className="w-full flex justify-center h-[90%] overflow-hidden"><div className="text-2xl color-black items-center justify-items-center text-align-center  min-h-screen mt-5 p-5 overflow-hidden font-vt323 w-[80%]">
     {/* Refreshing */}
 
-    <span className="font-extrabold mb-3">REFRESHING</span>
-    {/* <Image
+    <span className="font-extrabold xg-3">REFRESHING</span>
+    <img
       src={gdrivelinkprefix + refreshing}
       alt=""
       width={550} // High resolution for quality
       height={0} // Auto-calculate
-      quality={20}
+      referrerPolicy="no-referrer"  // Bypass referrer checks
       loading="lazy"
       className="w-full h-auto rounded-lg"
-      priority={false}
-      blurDataURL={gdrivelinkprefix + blankPhoto}
-      placeholder="blur"
-    /> */}
+    />
   </div></div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (error) return <div>Fail to load album, error: {error.message} </div>;
 
   type IndexSplitter = (numm: number) => Boolean;
   function DataMap({ props }: { props: IndexSplitter }) {
@@ -191,7 +189,7 @@ function ImageFrame(props: ImageFrameProps) {
     if ("files" in props.pfpData) {
       const pfpList = props.pfpData["files"]
       const indexSelected = getRandomInt(0, pfpList.length - 1)
-      return gdriveFolderlinkprefix + pfpList[indexSelected]["id"];
+      return gdrivelinkprefix + pfpList[indexSelected]["id"];
     }
     return gdrivelinkprefix + defaultpfp;
   }
@@ -199,35 +197,36 @@ function ImageFrame(props: ImageFrameProps) {
   return (
     <div className="relative m-2 p-2 bg-[#E4DDB6] rounded-md">
 
-      <Image key={props.id}
+      <img key={props.id}
         src={gdrivelinkprefix + props.id}
         alt=""
-        width={550} // High resolution for quality
-        height={0} // Auto-calculate
-        quality={10}
+        width={700} // High resolution for quality
+        // quality={10}
         loading="lazy"
+        onLoad={() => setLoaded(true)}
         className="w-full h-auto rounded-lg"
-        priority={false}
-        blurDataURL={gdrivelinkprefix + blankPhoto}
-        placeholder="blur"
-        onLoadingComplete={() => setLoaded(true)}
+        referrerPolicy="no-referrer"  // Bypass referrer checks
+      // priority={false}
+      // blurDataURL={gdrivelinkprefix + blankPhoto}
+      // placeholder="blur"
+      // onLoadingComplete={() => setLoaded(true)}
       />
       {/* {loaded ? <h5 className="text-shadow-black text-base absolute bottom-15 right-5 z-10 color-white overflow-hidden whitespace-nowrap">{props.timestamp}</h5> : <div className="hidden"></div>} */}
-
 
       {
         loaded ? <div className="flex items-center space-x-4 w-full mt-2">
           <div className="w-[10%] flex justify-start">
             <div className="w-full h-auto rounded-full object-cover bg-white p-1 border border-black border-2">
-              <Image // profile picture
+              <img // profile picture
                 className="w-full h-auto rounded-full object-cover"
                 src={getPFP()}
                 alt=""
-                quality={30}
+                // quality={30}
                 width={50}
                 height={50}
-                placeholder="blur"
-                blurDataURL={gdriveFolderlinkprefix + defaultpfp}
+                referrerPolicy="no-referrer"  // Bypass referrer checks
+              // placeholder="blur"
+              // blurDataURL={gdrivelinkprefix + defaultpfp}
               />
             </div>
           </div>
@@ -235,17 +234,18 @@ function ImageFrame(props: ImageFrameProps) {
           <h3 className="color-black text-md flex-grow overflow-x-hidden kaushan-script-regular lower-case">
             {props.sharer.replaceAll(" ", "_")}
           </h3>
-          <div className="w-12 h-12 max-w-[200px] aspect-auto"></div>
+          {/* <div className="w-12 h-12 max-w-[200px] aspect-auto"></div> */}
           <div className="w-[20%] flex justify-end">
-            <Image // sns icons
+            <img // sns icons
               src={gdrivelinkprefix + snsButtonSet}
               width={135}
               height={27}
               className="w-full h-auto"
               alt=""
+              referrerPolicy="no-referrer"  // Bypass referrer checks
             />
           </div>
-        </div> : <span className="color-black">blah blah blah..</span>
+        </div> : <span className="color-black">loading..</span>
       }
     </div>
   )
@@ -403,12 +403,29 @@ function LoginPage(props: loginProps) {
         </form>
 
         {
-          msg ? <div className="w-full bg-[#dedede] p-2 rounded-md">
+          msg ? <div className="max-w-md bg-[#dedede] p-2 rounded-md">
             <code className="text-red-500">
               {msg}
             </code>
           </div> : <span></span>
         }
+      </div>
+      <div className="max-w-md text-xs">
+        <h3 className='text-lg text-gray-600 font-semibold mt-1' id="to-setup-a-suitable-google-drive-shared-folder-link-"><code>Google Drive Shared Folder Link</code></h3>
+        <ol>
+          <li>- Select a suitable google drive folder. </li>
+          <li>- Ensure that it is shared to anyone with link</li>
+          <li>- Navigate to &quot;Shared or Managed Access&quot; &gt; &quot;Copy Link&quot;</li>
+        </ol>
+        <h3 className='text-lg text-gray-600 font-semibold mt-2' id="to-get-the-google-api-key-"><code>Google API Key</code></h3>
+        <ol>
+          <li>- Create a new Project or select an existing one in Google Cloud Console: <a href="https://console.cloud.google.com/">https://console.cloud.google.com/</a> </li>
+          <li>- Navigate to &quot;APIs &amp; Services&quot; &gt; &quot;Library&quot;</li>
+          <li>- Search for &quot;Google Drive API&quot;</li>
+          <li>- Click &quot;Enable&quot;</li>
+          <li>- Go to &quot;APIs &amp; Services&quot; &gt; &quot;Credentials&quot;: <a href="https://console.cloud.google.com/apis/credentials">https://console.cloud.google.com/apis/credentials</a> </li>
+          <li>- Create a new API Key to access google drive apis.</li>
+        </ol>
       </div>
     </div>
   );
@@ -420,7 +437,7 @@ export default function Home() {
   const [apiKey, setAPIKey] = useState('');
   const [refresh, setRefresh] = useState<Boolean | false>(false);
   const [scroll, setScroll] = useState<boolean | false>(false);
-  const [scrollSpeed, setScrollSpeed] = useState<number | 2>(2);
+  const [scrollSpeed, setScrollSpeed] = useState<number | 3>(3);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const timer = setInterval(() => {
@@ -436,6 +453,7 @@ export default function Home() {
         scrollContainerRef.current.clientHeight + 1;
       if (reachedBottom) {
         scrollContainerRef.current.scrollTop = 0; // Reset to top
+        setScroll(false)
         setRefresh(e => !e)
       }
 
@@ -445,35 +463,38 @@ export default function Home() {
   }, [scroll, scrollSpeed]);
 
   return (
-    <div className="items-center justify-items-center min-h-screen pt-20 gap-12 sm:px-5 bg-[#498679] font-ibm">
+    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 bg-[#498679] font-ibm overflow-hidden">
       {apiKey == '' || FolderID == '' ?
         <LoginPage setAPIKey={(s) => setAPIKey(s)} setFolderID={s => setFolderID(s)} setFolderName={s => setFolderName(s)} />
         :
         <div className="w-full flex justify-between">
-          <div className="h-[85vh] w-[20vw] flex flex-col my-2">
+          <div className="h-[90vh] w-[15vw] flex flex-col my-2">
             <div className="flex w-full">
-              <div className="w-[30%] flex flex-col justify-center item-center cursor-pointer m-3" onClick={() => { setAPIKey(""); setFolderID(""); }}>
-                <Image // eject disk
-                  className="w-70% h-auto object-cover"
-                  src={gdriveFolderlinkprefix + eject}
+              <div className="w-[30%] flex flex-col justify-center item-center cursor-pointer m-3" onClick={() => { setAPIKey(""); setFolderID(""); setScroll(false); }}>
+                <img // eject disk
+                  className="w-full h-auto object-cover"
+                  src={gdrivelinkprefix + eject}
                   alt=""
-                  quality={80}
-                  width={100}
-                  height={100}
-                  placeholder="blur"
-                  blurDataURL={gdriveFolderlinkprefix + blankPhoto}
+                  // quality={80}
+                  width={150}
+                  height={150}
+                  referrerPolicy="no-referrer"  // Bypass referrer checks
+                // placeholder="blur"
+                // blurDataURL={gdrivelinkprefix + blankPhoto}
                 />
-                <span className="bg-[#000000]/50 rounded-lg px-2 py-1 text-xs w-full text-center mt-1">eject</span>
+                <span className="bg-[#000000]/50 rounded-lg px-2 py-1 text-xs w-full text-center mt-1">eject-album</span>
               </div>
             </div>
 
             <div className="flex-grow"></div>
             {/* remaining desktop icons */}
-            <QRGenerator url={`https://drive.google.com/drive/folders/${FolderID}?usp=sharing`} name={FolderName} fgColor="#498679" bgColor="#FFFFFF" />
+            <div className="w-full relative">
+              <QRGenerator url={`https://drive.google.com/drive/folders/${FolderID}?usp=sharing`} name={FolderName} fgColor="#498679" bgColor="#FFFFFF" />
+            </div>
           </div>
 
 
-          <div className="h-[85vh] w-[75vw] flex flex-col overflow-hidden cursor-pointer" onClick={() => setScroll(e => !e)}>
+          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer" onClick={() => setScroll(e => !e)}>
             <div className="relative p-[-1] w-full">
               <GetHeader />
             </div>

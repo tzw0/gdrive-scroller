@@ -1,3 +1,24 @@
+# Google-Drive Scroller Quck Start
+
+### To setup a suitable `Google Drive Shared Folder Link`
+1. Select a suitable google drive folder. 
+2. Ensure that it is shared to anyone with link
+3. Navigate to "Shared or Managed Access" > "Copy Link"
+
+### To get the `Google API Key`
+1. Create a new Project or select an existing one in Google Cloud Console: https://console.cloud.google.com/ 
+2. Navigate to "APIs & Services" > "Library"
+3. Search for "Google Drive API"
+4. Click "Enable"
+5. Go to "APIs & Services" > "Credentials": https://console.cloud.google.com/apis/credentials 
+6. Create a new API Key to access google drive apis.
+7. Once submitted, this key will be insecurely stored in your cookies.
+
+
+
+
+# Standarad project setup readme
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Installation

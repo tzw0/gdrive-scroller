@@ -11,21 +11,27 @@ const nextConfig: NextConfig = {
 };
 
 module.exports = {
+  // For static export (if using GitHub Pages)
+  output: 'export',
+
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'drive.usercontent.google.com',
-        // Optionally restrict paths and ports
-        // pathname: '/download/**',
-        // port: '',
-      },
-      // Add more patterns as needed
+    // Allow image optimization from these domains
+    domains: [
+      'drive.google.com',
+      'lh3.googleusercontent.com', // Google Drive thumbnails
+      '*.googleusercontent.com'   // Covers all Google user content
     ],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 3600,
+
+    // Required for static export (GitHub Pages)
+    unoptimized: true,
+
+    // Optional: Set custom loader if needed
+    loader: 'default'
   },
+
+  // Only needed if your repo isn't USERNAME.github.io
+  basePath: process.env.NODE_ENV === 'production' ? '/gdrive-scroller' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/gdrive-scroller/' : '',
 }
 
 export default nextConfig;
