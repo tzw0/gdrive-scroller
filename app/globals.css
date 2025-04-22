@@ -1,3 +1,4 @@
+@import "https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Kaushan+Script&family=VT323&family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap";
 @import "tailwindcss";
 
 :root {
@@ -58,4 +59,31 @@ body {
 
 .lower-case {
   text-transform: lowercase;
+}
+
+.vt323-regular {
+  font-family: "VT323", monospace;
+  font-weight: 300;
+  font-style: normal;
+  letter-spacing: 0.2em;
+}
+
+.arimo-regular {
+  font-family: "Arimo", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.kaushan-script-regular {
+  font-family: "Kaushan Script", cursive;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.winky-rough-regular {
+  font-family: "Winky Rough", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
 }

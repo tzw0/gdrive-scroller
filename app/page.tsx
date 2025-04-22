@@ -5,7 +5,7 @@ import { setCookie, getCookie } from 'cookies-next';
 import QRGenerator from "./qr";
 
 const gdrivelinkprefix = "https://lh3.googleusercontent.com/d/"
-const bgheaderid = "1z7-ICzTecSQ4Z4wbZsl8Rb38FCFSWrNy"
+const bgheaderid = "1yjVW5RelHzyqyJcYyb9J7YPuEdM5X3GV"
 const bgfooterid = "1qOO9edsViKehiWKpkHNYEYD7yHnzPDQ4"
 const snsButtonSet = "1QfW0zFtwz5poV3X_nBq9zYdKwZHpKoWm"
 const defaultpfp = "1cdv8snvIogtCHBKlq2W1K3dYkK7SZUX1"
@@ -13,6 +13,7 @@ const pfpFolder = "1iObk9qywKpgnCf4RyCBuA3EUaFCFOqbM"
 const blankPhoto = "13a7YHqESADlYcU5fVwW6Uka4uEgUNu75"
 const eject = "1WnRBfqTc2L3EbWyrgPoYqeoDo6I65AJ3"
 const refreshing = "1SbonKV7sJmRVuHGSGveYDc1ShT5sNMuf"
+const fastForward = "1tfvLf_6U7cdLoCQLXFRt3CDA7FLpYKgG"
 
 function GetHeader() {
   return (
@@ -63,7 +64,7 @@ const GetGdriveObjInfo = (id: string) => "https://www.googleapis.com/drive/v3/fi
 function GetPics(props: GetPicsProps) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<Error | null>(null);
-  const [pfpData, setPFPData] = useState<Data | {}>({});
+  const [pfpData, setPFPData] = useState<Data | { "files": [] }>({});
   const url = GetGdriveFolderLink(props.scrollFolderID);
   const headers = {
     'Content-Type': 'application/json',
@@ -92,7 +93,19 @@ function GetPics(props: GetPicsProps) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         var data: Data = await response.json();
+
+        console.log("gdrive-data:", data);
+
+        // Begin pre-processing of data.
+        // 1. reject any file above 30MB or any non-image files.
+        data["files"] = data["files"].filter((d: any) => (!d["mimeType"].includes("image")) || (Number(d["size"]) / 1024 / 1024 > 30) ||
+          // ensure no funky image aspect ratios.
+          (d["imageMediaMetadata"] !== null &&
+            d["imageMediaMetadata"]["height"] / d["imageMediaMetadata"]["width"] <= 21 / 8 &&
+            d["imageMediaMetadata"]["width"] / d["imageMediaMetadata"]["height"] <= 21 / 8))
+        // 2. randomize the data.
         data["files"] = shuffleArray(data["files"])
+        // 3. populate file owner.
         await Promise.all(data["files"].map(async (file: any, i: number) => {
           const response = await fetch(GetGdriveObjInfo(file["id"]), {
             method: 'GET',
@@ -104,12 +117,14 @@ function GetPics(props: GetPicsProps) {
           var ownerData: Data = await response.json();
           if (ownerData["owners"].length > 0) {
             data["files"][i]["sharer"] = ownerData["owners"][0]["displayName"]
+            data["files"][i]["sharer_pfp"] = getRandomInt(0, 100)
           } else {
             data["files"][i]["sharer"] = "???"
+            data["files"][i]["sharer_pfp"] = 0
           }
         }))
         setData(data);
-        if (data["files"].length > 3) {
+        if (data["files"].length > 5) {
           props.picsLoadedSetter(true);
         }
         console.log("refreshing data:", data);
@@ -127,36 +142,35 @@ function GetPics(props: GetPicsProps) {
 
   if ((!data && !error) || data === null) return <div className="w-full flex justify-center h-[90%] overflow-hidden"><div className="text-2xl color-black items-center justify-items-center text-align-center  min-h-screen mt-5 p-5 overflow-hidden font-vt323 w-[80%]">
     {/* Refreshing */}
-
-    <span className="font-extrabold xg-3">REFRESHING</span>
+    <span className="vt323-regular text-8xl">REFRESHING...</span>
     <img
       src={gdrivelinkprefix + refreshing}
       alt=""
-      width={550} // High resolution for quality
+      width={350} // High resolution for quality
       height={0} // Auto-calculate
       referrerPolicy="no-referrer"  // Bypass referrer checks
       loading="lazy"
-      className="w-full h-auto rounded-lg"
+      className="w-[70%] h-auto rounded-lg mt-10"
     />
   </div></div>;
   if (error) return <div>Fail to load album, error: {error.message} </div>;
 
   type IndexSplitter = (numm: number) => Boolean;
+
   function DataMap({ props }: { props: IndexSplitter }) {
     if (data === null) {
       return <span></span>
     }
     return data["files"].map((file: any, i: number) => {
-      if (
-        (!file["mimeType"].includes("image")) ||
-        (Number(file["size"]) / 1024 / 1024 > 30) || // if greater than 20MB, skip it..
-        props(i)
-      ) {
+      if (props(i)) {
         return <span key={file["id"]}></span>
       }
+
+      const pfpDataList: any = pfpData["files"]
       return (
         <ImageFrame key={file["id"]} id={file["id"]} timestamp={file["createdTime"]}
-          sharer={file["sharer"]} pfpData={pfpData} />
+          sharer={file["sharer"]} pfpData={pfpData}
+          sharer_pfp={gdrivelinkprefix + pfpDataList[file["sharer_pfp"] % pfpData["files"].length]["id"]} />
       )
     })
   }
@@ -179,20 +193,12 @@ interface ImageFrameProps {
   id: string;
   timestamp: string;
   sharer: string;
+  sharer_pfp: string;
   pfpData: Data;
 }
 
 function ImageFrame(props: ImageFrameProps) {
   const [loaded, setLoaded] = useState<Boolean | false>(false);
-
-  function getPFP(): string {
-    if ("files" in props.pfpData) {
-      const pfpList = props.pfpData["files"]
-      const indexSelected = getRandomInt(0, pfpList.length - 1)
-      return gdrivelinkprefix + pfpList[indexSelected]["id"];
-    }
-    return gdrivelinkprefix + defaultpfp;
-  }
 
   return (
     <div className="relative m-2 p-2 bg-[#E4DDB6] rounded-md">
@@ -214,12 +220,12 @@ function ImageFrame(props: ImageFrameProps) {
       {/* {loaded ? <h5 className="text-shadow-black text-base absolute bottom-15 right-5 z-10 color-white overflow-hidden whitespace-nowrap">{props.timestamp}</h5> : <div className="hidden"></div>} */}
 
       {
-        loaded ? <div className="flex items-center space-x-4 w-full mt-2">
+        <div className="flex items-center space-x-4 w-full mt-2">
           <div className="w-[10%] flex justify-start">
             <div className="w-full h-auto rounded-full object-cover bg-white p-1 border border-black border-2">
               <img // profile picture
                 className="w-full h-auto rounded-full object-cover"
-                src={getPFP()}
+                src={props.sharer_pfp}
                 alt=""
                 // quality={30}
                 width={50}
@@ -231,7 +237,7 @@ function ImageFrame(props: ImageFrameProps) {
             </div>
           </div>
 
-          <h3 className="color-black text-md flex-grow overflow-x-hidden kaushan-script-regular lower-case">
+          <h3 className="color-black text-md flex-grow overflow-x-hidden lower-case">
             {props.sharer.replaceAll(" ", "_")}
           </h3>
           {/* <div className="w-12 h-12 max-w-[200px] aspect-auto"></div> */}
@@ -245,7 +251,7 @@ function ImageFrame(props: ImageFrameProps) {
               referrerPolicy="no-referrer"  // Bypass referrer checks
             />
           </div>
-        </div> : <span className="color-black">loading..</span>
+        </div>
       }
     </div>
   )
@@ -271,11 +277,13 @@ interface loginProps {
   setFolderID: setStr
   setAPIKey: setStr
   setFolderName: setStr
+  setAlbumName: setStr
 }
 
 function LoginPage(props: loginProps) {
-  const [FolderID, setFolderID] = useState('');;
-  const [apiKey, setApiKey] = useState('');;
+  const [FolderID, setFolderID] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [albumName, setAlbumName] = useState('');;
   const [error, setError] = useState('');
   const [msg, setMessage] = useState('');
 
@@ -288,6 +296,10 @@ function LoginPage(props: loginProps) {
     const apiKeyC = getCookie('gdriveapikey');
     if (apiKeyC) {
       setApiKey(apiKeyC.toString());
+    }
+    const albumNameC = getCookie('gdrivealbumname');
+    if (albumNameC) {
+      setAlbumName(albumNameC.toString());
     }
   }, []);
 
@@ -339,16 +351,24 @@ function LoginPage(props: loginProps) {
       sameSite: 'strict'
     });
 
+    setCookie('gdrivealbumname', albumName, {
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+      path: '/',
+      secure: true,
+      sameSite: 'strict'
+    });
+
     props.setFolderID(trueFolderID);
+    props.setAlbumName(albumName);
     props.setAPIKey(apiKey);
   };
 
 
   return (
-    <div className="font-ibm">
+    <div className="winky-rough-regular">
       <div className="max-w-md w-full space-y-8 ">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="arimo-regular mt-6 text-center text-3xl font-extrabold text-black">
             Enter Google-Drive Folder Details
           </h2>
         </div>
@@ -360,9 +380,6 @@ function LoginPage(props: loginProps) {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="FolderID-address" className="sr-only">
-                G-Drive Shared Folder Link
-              </label>
               <input
                 id="FolderID-address"
                 name="FolderID"
@@ -376,9 +393,6 @@ function LoginPage(props: loginProps) {
               />
             </div>
             <div>
-              <label htmlFor="apiKey" className="sr-only">
-                Google API Key
-              </label>
               <input
                 id="apiKey"
                 name="apiKey"
@@ -389,6 +403,16 @@ function LoginPage(props: loginProps) {
                 placeholder="Google API Key"
                 value={apiKey}
                 onChange={(e) => { setApiKey(e.target.value) }}
+              />
+            </div>
+            <div>
+              <input
+                id="Album-Name"
+                name="AlbumName"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-white-500 placeholder-[#DEDEDE]-500 text-white-900 rounded-t-md focus:outline-none focus:ring-pink-500 focus:border-pink-700 focus:z-10 1xl:text-2xl mt-3"
+                placeholder="album name (40 char max)"
+                value={albumName}
+                onChange={(e) => setAlbumName(e.target.value.length <= 40 ? e.target.value : e.target.value.slice(0, 39))}
               />
             </div>
           </div>
@@ -431,13 +455,39 @@ function LoginPage(props: loginProps) {
   );
 }
 
+type voidFunc = () => void
+
+interface DesktopIconInterface {
+  src: string,
+  onClick: voidFunc,
+  text: string,
+  flipIcon: boolean,
+}
+
+function DesktopIcon(props: DesktopIconInterface) {
+  return (
+    <div className="w-[33%] flex flex-col justify-center item-center cursor-pointer m-3 hover:bg-blue-900 active:bg-gray-500" onClick={() => props.onClick()}>
+      <img
+        className={props.flipIcon ? "w-full h-auto object-cover scale-x-[-1]" : "w-full h-auto object-cover"}
+        src={props.src}
+        alt=""
+        width={150}
+        height={150}
+        referrerPolicy="no-referrer"  // Bypass referrer checks
+      />
+      <span className="bg-[#000000]/50 rounded-lg text-sm w-full text-center mt-1 vt323-regular">{props.text}</span>
+    </div>
+  )
+}
+
 export default function Home() {
   const [FolderID, setFolderID] = useState('');
   const [FolderName, setFolderName] = useState('');
+  const [albumName, setAlbumName] = useState('');
   const [apiKey, setAPIKey] = useState('');
   const [refresh, setRefresh] = useState<Boolean | false>(false);
   const [scroll, setScroll] = useState<boolean | false>(false);
-  const [scrollSpeed, setScrollSpeed] = useState<number | 3>(3);
+  const [scrollSpeed, setScrollSpeed] = useState<number | 4>(4);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const timer = setInterval(() => {
@@ -457,37 +507,31 @@ export default function Home() {
         setRefresh(e => !e)
       }
 
-    }, 20);
+    }, 50);
 
     return () => clearInterval(timer);
   }, [scroll, scrollSpeed]);
 
   return (
-    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 bg-[#498679] font-ibm overflow-hidden">
+    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 bg-[#498679] overflow-hidden">
       {apiKey == '' || FolderID == '' ?
-        <LoginPage setAPIKey={(s) => setAPIKey(s)} setFolderID={s => setFolderID(s)} setFolderName={s => setFolderName(s)} />
+        <LoginPage
+          setAPIKey={(s) => setAPIKey(s)}
+          setFolderID={s => setFolderID(s)}
+          setFolderName={s => setFolderName(s)}
+          setAlbumName={s => setAlbumName(s)} />
         :
         <div className="w-full flex justify-between">
           <div className="h-[90vh] w-[15vw] flex flex-col my-2">
             <div className="flex w-full">
-              <div className="w-[30%] flex flex-col justify-center item-center cursor-pointer m-3" onClick={() => { setAPIKey(""); setFolderID(""); setScroll(false); }}>
-                <img // eject disk
-                  className="w-full h-auto object-cover"
-                  src={gdrivelinkprefix + eject}
-                  alt=""
-                  // quality={80}
-                  width={150}
-                  height={150}
-                  referrerPolicy="no-referrer"  // Bypass referrer checks
-                // placeholder="blur"
-                // blurDataURL={gdrivelinkprefix + blankPhoto}
-                />
-                <span className="bg-[#000000]/50 rounded-lg px-2 py-1 text-xs w-full text-center mt-1">eject-album</span>
-              </div>
+              <DesktopIcon text='EJECT' flipIcon={false} src={gdrivelinkprefix + eject} onClick={() => { setAPIKey(""); setFolderID(""); setScroll(false); }} />
+            </div>
+            <div className="flex w-full">
+              <DesktopIcon text='slower' flipIcon={true} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s <= 0.5 ? 0.5 : s / 2) }} />
+              <DesktopIcon text='faster' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 32 ? 32 : s * 2) }} />
             </div>
 
             <div className="flex-grow"></div>
-            {/* remaining desktop icons */}
             <div className="w-full relative">
               <QRGenerator url={`https://drive.google.com/drive/folders/${FolderID}?usp=sharing`} name={FolderName} fgColor="#498679" bgColor="#FFFFFF" />
             </div>
@@ -497,12 +541,12 @@ export default function Home() {
           <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer" onClick={() => setScroll(e => !e)}>
             <div className="relative p-[-1] w-full">
               <GetHeader />
+              <div style={{ fontSize: '2.2vw' }}
+                className="vt323-regular text-gray-700 absolute top-[3vw] left-[10.5vw] z-10">{albumName}</div>
             </div>
             <div className="flex-1 scrollbar-track-custom overflow-y-auto mx-0.5 px-0.55 bg-[#F4C8FF] scroll-smooth [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-white" ref={scrollContainerRef} key={refresh ? "terrible" : "refresh mech"}>
               <GetPics
-                picsLoadedSetter={(b) => setTimeout(() => {
-                  setScroll(b)
-                }, 5000)}
+                picsLoadedSetter={(b) => setScroll(b)}
                 apiKey={apiKey}
                 scrollFolderID={FolderID} />
             </div>
