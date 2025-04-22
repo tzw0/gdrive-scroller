@@ -487,7 +487,7 @@ export default function Home() {
   const [apiKey, setAPIKey] = useState('');
   const [refresh, setRefresh] = useState<Boolean | false>(false);
   const [scroll, setScroll] = useState<boolean | false>(false);
-  const [scrollSpeed, setScrollSpeed] = useState<number | 4>(4);
+  const [scrollSpeed, setScrollSpeed] = useState<number | 2>(2);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const timer = setInterval(() => {
@@ -507,7 +507,7 @@ export default function Home() {
         setRefresh(e => !e)
       }
 
-    }, 50);
+    }, 25);
 
     return () => clearInterval(timer);
   }, [scroll, scrollSpeed]);
@@ -528,7 +528,7 @@ export default function Home() {
             </div>
             <div className="flex w-full">
               <DesktopIcon text='slower' flipIcon={true} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s <= 0.5 ? 0.5 : s / 2) }} />
-              <DesktopIcon text='faster' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 32 ? 32 : s * 2) }} />
+              <DesktopIcon text='faster' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 16 ? 16 : s * 2) }} />
             </div>
 
             <div className="flex-grow"></div>
