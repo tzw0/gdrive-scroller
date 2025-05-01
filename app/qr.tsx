@@ -10,7 +10,7 @@ interface qrcodeProps {
 
 export default function QRGenerator(props: qrcodeProps) {
     return (
-        <div className="flex flex-col items-center gap-2 p-2 max-w-md mx-auto arimo-regular">
+        <div className="flex flex-col items-center gap-2 p-2 max-w-md mx-auto arimo-regular color-white">
             <h1 className="text-xl font-bold">Upload Images here!</h1>
 
             <div className="bg-white rounded-lg shadow w-full">

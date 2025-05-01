@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { setCookie, getCookie } from 'cookies-next';
 import QRGenerator from "./qr";
+import AutoScroll from './autoscroll';
 
 const gdrivelinkprefix = "https://lh3.googleusercontent.com/d/"
 const bgheaderid = "1yjVW5RelHzyqyJcYyb9J7YPuEdM5X3GV"
@@ -14,6 +15,7 @@ const blankPhoto = "13a7YHqESADlYcU5fVwW6Uka4uEgUNu75"
 const eject = "1WnRBfqTc2L3EbWyrgPoYqeoDo6I65AJ3"
 const refreshing = "1SbonKV7sJmRVuHGSGveYDc1ShT5sNMuf"
 const fastForward = "1tfvLf_6U7cdLoCQLXFRt3CDA7FLpYKgG"
+const refreshIcon = "1m2bNzbiPgTaRFZnBnmPK10eVyKfu-e4b"
 
 function GetHeader() {
   return (
@@ -94,8 +96,6 @@ function GetPics(props: GetPicsProps) {
         }
         var data: Data = await response.json();
 
-        console.log("gdrive-data:", data);
-
         // Begin pre-processing of data.
         // 1. reject any file above 30MB or any non-image files.
         data["files"] = data["files"].filter((d: any) => (!d["mimeType"].includes("image")) || (Number(d["size"]) / 1024 / 1024 > 30) ||
@@ -140,19 +140,20 @@ function GetPics(props: GetPicsProps) {
     fetchData();
   }, []);
 
-  if ((!data && !error) || data === null) return <div className="w-full flex justify-center h-[90%] overflow-hidden"><div className="text-2xl color-black items-center justify-items-center text-align-center  min-h-screen mt-5 p-5 overflow-hidden font-vt323 w-[80%]">
-    {/* Refreshing */}
-    <span className="vt323-regular text-8xl">REFRESHING...</span>
-    <img
-      src={gdrivelinkprefix + refreshing}
-      alt=""
-      width={350} // High resolution for quality
-      height={0} // Auto-calculate
-      referrerPolicy="no-referrer"  // Bypass referrer checks
-      loading="lazy"
-      className="w-[70%] h-auto rounded-lg mt-10"
-    />
-  </div></div>;
+  if ((!data && !error) || data === null) return (
+    <div className="w-full flex justify-center h-[70%]"><div className="text-2xl color-black items-center justify-items-center text-align-center  min-h-screen mt-5 p-5 overflow-hidden font-vt323 w-[80%]">
+      {/* Refreshing */}
+      <span className="vt323-regular text-8xl">REFRESHING...</span>
+      <img
+        src={gdrivelinkprefix + refreshing}
+        alt=""
+        width={0} // High resolution for quality
+        height={600} // Auto-calculate
+        referrerPolicy="no-referrer"  // Bypass referrer checks
+        // loading="lazy"
+        className="w-auto h-[30%] rounded-lg mt-10"
+      />
+    </div></div>);
   if (error) return <div>Fail to load album, error: {error.message} </div>;
 
   type IndexSplitter = (numm: number) => Boolean;
@@ -208,7 +209,7 @@ function ImageFrame(props: ImageFrameProps) {
         alt=""
         width={700} // High resolution for quality
         // quality={10}
-        loading="lazy"
+        // loading="lazy"
         onLoad={() => setLoaded(true)}
         className="w-full h-auto rounded-lg"
         referrerPolicy="no-referrer"  // Bypass referrer checks
@@ -368,7 +369,7 @@ function LoginPage(props: loginProps) {
     <div className="winky-rough-regular">
       <div className="max-w-md w-full space-y-8 ">
         <div>
-          <h2 className="arimo-regular mt-6 text-center text-3xl font-extrabold text-black">
+          <h2 className="vt323-regular mt-6 text-center text-4xl font-extrabold">
             Enter Google-Drive Folder Details
           </h2>
         </div>
@@ -435,14 +436,14 @@ function LoginPage(props: loginProps) {
         }
       </div>
       <div className="max-w-md text-xs">
-        <h3 className='text-lg text-gray-600 font-semibold mt-1' id="to-setup-a-suitable-google-drive-shared-folder-link-"><code>Google Drive Shared Folder Link</code></h3>
-        <ol>
+        <h3 className='text-lg text-gray-300 font-semibold mt-1' id="to-setup-a-suitable-google-drive-shared-folder-link-"><code>Google Drive Shared Folder Link</code></h3>
+        <ol className='text-gray-400'>
           <li>- Select a suitable google drive folder. </li>
           <li>- Ensure that it is shared to anyone with link</li>
           <li>- Navigate to &quot;Shared or Managed Access&quot; &gt; &quot;Copy Link&quot;</li>
         </ol>
-        <h3 className='text-lg text-gray-600 font-semibold mt-2' id="to-get-the-google-api-key-"><code>Google API Key</code></h3>
-        <ol>
+        <h3 className='text-lg text-gray-300 font-semibold mt-2' id="to-get-the-google-api-key-"><code>Google API Key</code></h3>
+        <ol className='text-gray-400'>
           <li>- Create a new Project or select an existing one in Google Cloud Console: <a href="https://console.cloud.google.com/">https://console.cloud.google.com/</a> </li>
           <li>- Navigate to &quot;APIs &amp; Services&quot; &gt; &quot;Library&quot;</li>
           <li>- Search for &quot;Google Drive API&quot;</li>
@@ -489,31 +490,9 @@ export default function Home() {
   const [scroll, setScroll] = useState<boolean | false>(false);
   const [scrollSpeed, setScrollSpeed] = useState<number | 2>(2);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!scroll || scrollContainerRef == null || !scrollContainerRef.current) return;
-
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop += scrollSpeed;
-      }
-
-      // Check if reached bottom
-      const reachedBottom = scrollContainerRef.current.scrollHeight -
-        scrollContainerRef.current.scrollTop <
-        scrollContainerRef.current.clientHeight + 1;
-      if (reachedBottom) {
-        scrollContainerRef.current.scrollTop = 0; // Reset to top
-        setScroll(false)
-        setRefresh(e => !e)
-      }
-
-    }, 25);
-
-    return () => clearInterval(timer);
-  }, [scroll, scrollSpeed]);
 
   return (
-    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 bg-[#498679] overflow-hidden">
+    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 overflow-hidden">
       {apiKey == '' || FolderID == '' ?
         <LoginPage
           setAPIKey={(s) => setAPIKey(s)}
@@ -525,30 +504,33 @@ export default function Home() {
           <div className="h-[90vh] w-[15vw] flex flex-col my-2">
             <div className="flex w-full">
               <DesktopIcon text='EJECT' flipIcon={false} src={gdrivelinkprefix + eject} onClick={() => { setAPIKey(""); setFolderID(""); setScroll(false); }} />
+              <DesktopIcon text='RELOAD' flipIcon={false} src={gdrivelinkprefix + refreshIcon} onClick={() => { setRefresh(e => !e) }} />
             </div>
             <div className="flex w-full">
-              <DesktopIcon text='slower' flipIcon={true} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s <= 0.5 ? 0.5 : s / 2) }} />
-              <DesktopIcon text='faster' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 16 ? 16 : s * 2) }} />
+              <DesktopIcon text='SLOWER' flipIcon={true} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s <= 0.5 ? 0.5 : s / 2); console.log("scroll speed reduce:", scrollSpeed) }} />
+              <DesktopIcon text='FASTER' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 32 ? 32 : s * 2); console.log("scroll speed increase:", scrollSpeed) }} />
             </div>
 
             <div className="flex-grow"></div>
             <div className="w-full relative">
-              <QRGenerator url={`https://drive.google.com/drive/folders/${FolderID}?usp=sharing`} name={FolderName} fgColor="#498679" bgColor="#FFFFFF" />
+              <QRGenerator url={`https://drive.google.com/drive/folders/${FolderID}?usp=sharing`} name={FolderName} fgColor="#284a42" bgColor="#FFFFFF" />
             </div>
           </div>
 
 
-          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer" onClick={() => setScroll(e => !e)}>
+          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer" onClick={() => { setScroll(e => !e); }}>
             <div className="relative p-[-1] w-full">
               <GetHeader />
               <div style={{ fontSize: '2.2vw' }}
                 className="vt323-regular text-gray-700 absolute top-[3vw] left-[10.5vw] z-10">{albumName}</div>
             </div>
-            <div className="flex-1 scrollbar-track-custom overflow-y-auto mx-0.5 px-0.55 bg-[#F4C8FF] scroll-smooth [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-white" ref={scrollContainerRef} key={refresh ? "terrible" : "refresh mech"}>
-              <GetPics
-                picsLoadedSetter={(b) => setScroll(b)}
-                apiKey={apiKey}
-                scrollFolderID={FolderID} />
+            <div className="flex-1 scrollbar-track-custom overflow-y-auto mx-0.5 px-0.55 bg-[#F4C8FF] scroll-smooth [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-white" ref={scrollContainerRef} key={refresh ? "refresh fail" : "refresh mech"}>
+              <AutoScroll scroll={scroll} speed={scrollSpeed} resetFunc={() => setRefresh(e => !e)}>
+                <GetPics
+                  picsLoadedSetter={(b) => { setScroll(b); }}
+                  apiKey={apiKey}
+                  scrollFolderID={FolderID} />
+              </AutoScroll>
             </div>
             <div className="p-[-1]">
               <GetFooter />
