@@ -14,7 +14,7 @@ const pfpFolder = "1iObk9qywKpgnCf4RyCBuA3EUaFCFOqbM"
 const blankPhoto = "13a7YHqESADlYcU5fVwW6Uka4uEgUNu75"
 const eject = "1WnRBfqTc2L3EbWyrgPoYqeoDo6I65AJ3"
 const refreshing = "1SbonKV7sJmRVuHGSGveYDc1ShT5sNMuf"
-const fastForward = "1tfvLf_6U7cdLoCQLXFRt3CDA7FLpYKgG"
+const fastForward = "1527RNruvuXS4sDZ8xlPRmCyJF0gA012J"
 const refreshIcon = "1m2bNzbiPgTaRFZnBnmPK10eVyKfu-e4b"
 
 function GetHeader() {
@@ -287,6 +287,7 @@ function LoginPage(props: loginProps) {
   const [albumName, setAlbumName] = useState('');;
   const [error, setError] = useState('');
   const [msg, setMessage] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     // Client-side cookie access
@@ -302,6 +303,16 @@ function LoginPage(props: loginProps) {
     if (albumNameC) {
       setAlbumName(albumNameC.toString());
     }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        formRef.current?.requestSubmit(); // Programmatically submit form
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -369,7 +380,7 @@ function LoginPage(props: loginProps) {
     <div className="winky-rough-regular">
       <div className="max-w-md w-full space-y-8 ">
         <div>
-          <h2 className="vt323-regular mt-6 text-center text-4xl font-extrabold">
+          <h2 className="vt323-regular mt-6 text-center text-4xl font-extrabold text-[#F7D803]">
             Enter Google-Drive Folder Details
           </h2>
         </div>
@@ -378,7 +389,7 @@ function LoginPage(props: loginProps) {
             <span className="block sm:inline">{error}</span>
           </div>
         )}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} ref={formRef}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <input
@@ -420,9 +431,9 @@ function LoginPage(props: loginProps) {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-black bg-[#CAF1FF] hover:bg-white-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="group relative w-full flex justify-center p-1 border border-transparent text-2xl font-extrabold vt323-regular rounded-md text-black bg-[#F7D803] hover:bg-[#EAAAFF] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Let's Go!
+              LET'S GO!
             </button>
           </div>
         </form>
@@ -436,13 +447,13 @@ function LoginPage(props: loginProps) {
         }
       </div>
       <div className="max-w-md text-xs">
-        <h3 className='text-lg text-gray-300 font-semibold mt-1' id="to-setup-a-suitable-google-drive-shared-folder-link-"><code>Google Drive Shared Folder Link</code></h3>
+        <h3 className='text-lg text-[#EAAAFF] font-semibold mt-1' id="to-setup-a-suitable-google-drive-shared-folder-link-"><code>Google Drive Shared Folder Link</code></h3>
         <ol className='text-gray-400'>
           <li>- Select a suitable google drive folder. </li>
           <li>- Ensure that it is shared to anyone with link</li>
           <li>- Navigate to &quot;Shared or Managed Access&quot; &gt; &quot;Copy Link&quot;</li>
         </ol>
-        <h3 className='text-lg text-gray-300 font-semibold mt-2' id="to-get-the-google-api-key-"><code>Google API Key</code></h3>
+        <h3 className='text-lg text-[#EAAAFF] font-semibold mt-2' id="to-get-the-google-api-key-"><code>Google API Key</code></h3>
         <ol className='text-gray-400'>
           <li>- Create a new Project or select an existing one in Google Cloud Console: <a href="https://console.cloud.google.com/">https://console.cloud.google.com/</a> </li>
           <li>- Navigate to &quot;APIs &amp; Services&quot; &gt; &quot;Library&quot;</li>
@@ -491,6 +502,17 @@ export default function Home() {
   const [scrollSpeed, setScrollSpeed] = useState<number | 2>(2);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        setScroll(e => !e);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 overflow-hidden">
       {apiKey == '' || FolderID == '' ?
@@ -518,7 +540,7 @@ export default function Home() {
           </div>
 
 
-          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer" onClick={() => { setScroll(e => !e); }}>
+          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer">
             <div className="relative p-[-1] w-full">
               <GetHeader />
               <div style={{ fontSize: '2.2vw' }}

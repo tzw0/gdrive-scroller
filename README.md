@@ -1,5 +1,9 @@
 # Google-Drive Scroller Quck Start
 
+## Folder Selection Page
+
+![Sample Folder Selection Page](/public/images/select.png)  
+
 ### To setup a suitable `Google Drive Shared Folder Link`
 1. Select a suitable google drive folder. 
 2. Ensure that it is shared to anyone with link
@@ -13,6 +17,18 @@
 5. Go to "APIs & Services" > "Credentials": https://console.cloud.google.com/apis/credentials 
 6. Create a new API Key to access google drive apis.
 7. Once submitted, this key will be insecurely stored in your cookies.
+
+### Submit
+Form submission can also be done with `<SPACE>` / `<ENTER>` keys for faster usage.
+
+
+## Scroller Page
+![Sample Scroller View](/public/images/scroller.png)  
+
+1. `EJECT` Go back to folder selection page.
+2. `RELOAD` Instantly reload the selected folder, checking for updates. Everytime the scroll reaches the bottom, a reload will also be triggered.
+3. `SLOWER` / `FASTER` Control the scroll speed.
+4. Pressing `<SPACE>` / `<ENTER>` keys will toggle scroller pause and resume.
 
 
 
