@@ -34,7 +34,22 @@ Form submission can also be done with `<ENTER>` key for faster usage.
 4. Pressing `<SPACE>` key will toggle scroller pause and resume.
 
 
+# Dev notes
+### Deploy to gh-pages with
 
+```
+npm run deploy
+```
+
+### When getting error 
+```
+Error: Failed to get remote.origin.url (task must either be run in a git repository with a configured origin remote or must be configured with the "repo" option).
+``` 
+
+try these steps to fix it:
+1. rm -r node_modules/
+2. npm cache clean --force
+3. npm install
 
 # Standarad project setup readme
 
