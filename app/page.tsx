@@ -9,9 +9,7 @@ const gdrivelinkprefix = "https://lh3.googleusercontent.com/d/"
 const bgheaderid = "1yjVW5RelHzyqyJcYyb9J7YPuEdM5X3GV"
 const bgfooterid = "1qOO9edsViKehiWKpkHNYEYD7yHnzPDQ4"
 const snsButtonSet = "1QfW0zFtwz5poV3X_nBq9zYdKwZHpKoWm"
-const defaultpfp = "1cdv8snvIogtCHBKlq2W1K3dYkK7SZUX1"
 const pfpFolder = "1iObk9qywKpgnCf4RyCBuA3EUaFCFOqbM"
-const blankPhoto = "13a7YHqESADlYcU5fVwW6Uka4uEgUNu75"
 const eject = "1WnRBfqTc2L3EbWyrgPoYqeoDo6I65AJ3"
 const refreshing = "1SbonKV7sJmRVuHGSGveYDc1ShT5sNMuf"
 const fastForward = "1527RNruvuXS4sDZ8xlPRmCyJF0gA012J"
@@ -143,7 +141,7 @@ function GetPics(props: GetPicsProps) {
   if ((!data && !error) || data === null) return (
     <div className="w-full flex justify-center h-[70%]"><div className="text-2xl color-black items-center justify-items-center text-align-center  min-h-screen mt-5 p-5 overflow-hidden font-vt323 w-[80%]">
       {/* Refreshing */}
-      <span className="vt323-regular text-8xl">REFRESHING...</span>
+      <span className="vt323-regular text-5xl">REFRESHING...</span>
       <img
         src={gdrivelinkprefix + refreshing}
         alt=""
@@ -208,17 +206,10 @@ function ImageFrame(props: ImageFrameProps) {
         src={gdrivelinkprefix + props.id}
         alt=""
         width={700} // High resolution for quality
-        // quality={10}
-        // loading="lazy"
         onLoad={() => setLoaded(true)}
         className="w-full h-auto rounded-lg"
         referrerPolicy="no-referrer"  // Bypass referrer checks
-      // priority={false}
-      // blurDataURL={gdrivelinkprefix + blankPhoto}
-      // placeholder="blur"
-      // onLoadingComplete={() => setLoaded(true)}
       />
-      {/* {loaded ? <h5 className="text-shadow-black text-base absolute bottom-15 right-5 z-10 color-white overflow-hidden whitespace-nowrap">{props.timestamp}</h5> : <div className="hidden"></div>} */}
 
       {
         <div className="flex items-center space-x-4 w-full mt-2">
@@ -228,12 +219,9 @@ function ImageFrame(props: ImageFrameProps) {
                 className="w-full h-auto rounded-full object-cover"
                 src={props.sharer_pfp}
                 alt=""
-                // quality={30}
                 width={50}
                 height={50}
                 referrerPolicy="no-referrer"  // Bypass referrer checks
-              // placeholder="blur"
-              // blurDataURL={gdrivelinkprefix + defaultpfp}
               />
             </div>
           </div>
@@ -241,7 +229,6 @@ function ImageFrame(props: ImageFrameProps) {
           <h3 className="color-black text-md flex-grow overflow-x-hidden lower-case">
             {props.sharer.replaceAll(" ", "_")}
           </h3>
-          {/* <div className="w-12 h-12 max-w-[200px] aspect-auto"></div> */}
           <div className="w-[20%] flex justify-end">
             <img // sns icons
               src={gdrivelinkprefix + snsButtonSet}
@@ -305,7 +292,7 @@ function LoginPage(props: loginProps) {
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'Enter') {
         e.preventDefault();
         formRef.current?.requestSubmit(); // Programmatically submit form
       }
@@ -499,12 +486,12 @@ export default function Home() {
   const [apiKey, setAPIKey] = useState('');
   const [refresh, setRefresh] = useState<Boolean | false>(false);
   const [scroll, setScroll] = useState<boolean | false>(false);
-  const [scrollSpeed, setScrollSpeed] = useState<number | 2>(2);
+  const [scrollSpeed, setScrollSpeed] = useState<number | 1>(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === ' ') {
         setScroll(e => !e);
       }
     };
@@ -514,7 +501,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5 overflow-hidden">
+    <div className="items-center h-[95vh] justify-items-center min-h-screen pt-[2%] gap-12 sm:px-5">
       {apiKey == '' || FolderID == '' ?
         <LoginPage
           setAPIKey={(s) => setAPIKey(s)}
@@ -529,8 +516,8 @@ export default function Home() {
               <DesktopIcon text='RELOAD' flipIcon={false} src={gdrivelinkprefix + refreshIcon} onClick={() => { setRefresh(e => !e) }} />
             </div>
             <div className="flex w-full">
-              <DesktopIcon text='SLOWER' flipIcon={true} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s <= 0.5 ? 0.5 : s / 2); console.log("scroll speed reduce:", scrollSpeed) }} />
-              <DesktopIcon text='FASTER' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 32 ? 32 : s * 2); console.log("scroll speed increase:", scrollSpeed) }} />
+              <DesktopIcon text='SLOWER' flipIcon={true} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s <= 0.25 ? 0.25 : s / 2); console.log("scroll speed reduce:", scrollSpeed) }} />
+              <DesktopIcon text='FASTER' flipIcon={false} src={gdrivelinkprefix + fastForward} onClick={() => { setScrollSpeed(s => s >= 64 ? 64 : s * 2); console.log("scroll speed increase:", scrollSpeed) }} />
             </div>
 
             <div className="flex-grow"></div>
@@ -540,7 +527,7 @@ export default function Home() {
           </div>
 
 
-          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden cursor-pointer">
+          <div className="h-[92vh] w-[80vw] flex flex-col overflow-hidden">
             <div className="relative p-[-1] w-full">
               <GetHeader />
               <div style={{ fontSize: '2.2vw' }}
@@ -561,6 +548,9 @@ export default function Home() {
         </div>
       }
 
+      <div className='fixed bottom-[1%] right-[2%] text-[#F7D803]' style={{ "fontSize": "1.5vh" }}>
+        google-drive montage scroller: <span className='underline font-bold'>https://tzw0.github.io/gdrive-scroller</span>
+      </div>
     </div>
   );
 }

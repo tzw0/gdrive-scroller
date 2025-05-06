@@ -1,4 +1,7 @@
-# Google-Drive Scroller Quck Start
+# Google-Drive Scroller Intro
+Completely free real-time scroll-style montage creator from a publicly shared google drive folder.
+
+# Quck Start
 
 ## Folder Selection Page
 
@@ -19,7 +22,7 @@
 7. Once submitted, this key will be insecurely stored in your cookies.
 
 ### Submit
-Form submission can also be done with `<SPACE>` / `<ENTER>` keys for faster usage.
+Form submission can also be done with `<ENTER>` key for faster usage.
 
 
 ## Scroller Page
@@ -28,7 +31,7 @@ Form submission can also be done with `<SPACE>` / `<ENTER>` keys for faster usag
 1. `EJECT` Go back to folder selection page.
 2. `RELOAD` Instantly reload the selected folder, checking for updates. Everytime the scroll reaches the bottom, a reload will also be triggered.
 3. `SLOWER` / `FASTER` Control the scroll speed.
-4. Pressing `<SPACE>` / `<ENTER>` keys will toggle scroller pause and resume.
+4. Pressing `<SPACE>` key will toggle scroller pause and resume.
 
 
 

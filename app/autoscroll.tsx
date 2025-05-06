@@ -47,14 +47,6 @@ const AutoScroll: React.FC<AutoScrollProps> = ({ scroll = false, children, speed
                         console.log("reset")
                         resetFunc();
                     },
-                    // onUpdate: function () {
-                    //     // console.log(`Progress: ${this.progress()}, YPos: ${this.yPos}, Elapsed: ${this.elapsed}`);
-                    //     // Force completion detection
-                    //     if (this.progress() > 0.999) {
-                    //         this.pause();
-                    //         this.eventCallback("onComplete")?.();
-                    //     }
-                    // }
                 });
             }
         };
@@ -79,28 +71,13 @@ const AutoScroll: React.FC<AutoScrollProps> = ({ scroll = false, children, speed
             isPausedRef.current = !isPausedRef.current
         }
 
-        const resumeAnimation = () => {
-            if (animationRef.current && isPausedRef.current) {
-                animationRef.current.play();
-                isPausedRef.current = false;
-            }
-        };
-
-        // container.addEventListener('mouseenter', pauseAnimation);
-        // container.addEventListener('mouseleave', resumeAnimation);
-        // container.addEventListener('focusin', 
-        // meAnimation);
-        container.addEventListener('click', handleClick);
+        // container.addEventListener('click', handleClick);
 
         return () => {
             if (animationRef.current) {
                 animationRef.current.kill();
             }
-            container.removeEventListener('mouseenter', pauseAnimation);
-            container.removeEventListener('mouseleave', resumeAnimation);
-            container.removeEventListener('focusin', pauseAnimation);
-            container.removeEventListener('focusout', resumeAnimation);
-            container.removeEventListener('focuclicksout', handleClick);
+            container.removeEventListener('click', handleClick)
         };
     }, [children, speed, scroll]);
 
